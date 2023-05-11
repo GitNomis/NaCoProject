@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Tuple, Union, Optional, List
 import numpy as np
 
+from . import Rule
 from .Swarm import Swarm
 from .State import State
 
@@ -20,8 +21,8 @@ class Environment:
         """      
         self.n_tiles = size[0] * size[1]  
         self.grid = self.create_grid(size=size, fire_size=fire_size)
-        rules = None  # TODO: initialize rules
-        self.swarm = Swarm(grid=self.grid, nboids=size, rules=rules)
+        rules = [Rule.Alignment(), Rule.Cohesion(), Rule.Separation()]
+        self.swarm = Swarm(grid=self.grid, vision_range = 10, nboids=swarm_size, rules=rules)
 
 
     def create_grid(self, size: Tuple[int, int], fire_size: Union[int, float]) -> np.ndarray:
@@ -44,6 +45,11 @@ class Environment:
         fire_coordinates = (tuple(ys), tuple(xs))
         grid[fire_coordinates] = State.FIRE.value
         return grid
+
+    def update(self) -> None:
+        """_summary_
+        """        
+        self.swarm.update()
     
     def calculate_fitness(self) -> int:
         """Calculate the fitness of the simulated environment, which is based on the number of burning tiles. 
