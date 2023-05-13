@@ -14,25 +14,47 @@ class Display:
         self.cmap = colors.ListedColormap(['moccasin','firebrick','green','yellow'])
         bounds=[-0.5, 0.5, 1.5, 2.5, 3.5]
         self.norm = colors.BoundaryNorm(bounds, self.cmap.N)
-        self.interval = 200
+        self.interval = 100
+        self.boid_marker = ">"
 
     def display(self):
+        fig, self.ax = plt.subplots(1, 1, figsize=(5, 5))
+        self.ax.set_xlim([0,self.env.grid.shape[0]])
+        self.ax.set_ylim([0,self.env.grid.shape[1]])
 
-        fig, ax = plt.subplots(1, 1, figsize=(5, 5))
-        plt.tight_layout()
-
+        # Forest fire heatmap
         sns.heatmap(self.env.grid, cbar=False, cmap=self.cmap, norm=self.norm)
+        
+        # Boids scatterplot
+        x = [boid.position[0] for boid in self.env.swarm.boids]
+        y = [boid.position[1] for boid in self.env.swarm.boids]
+        self.scatter = plt.scatter(x, y, marker=self.boid_marker)
 
+        # Animation
         animator = animation.FuncAnimation(fig, self.animate, interval=self.interval, frames=self.steps, repeat=False, cache_frame_data=False)
 
+        plt.tight_layout()
         plt.show(block=False)
         plt.pause(self.steps * self.interval * 0.001) # pause (s) = frames * interval (ms) * 0.001
-        plt.close("all")
+        plt.close(fig)
         
     def animate(self, i:int):
-        self.env.update()
-        sns.heatmap(self.env.grid, cbar=False, cmap=self.cmap, norm=self.norm) # Update the fire
-        # TODO: Update the boids
+        # Clear axes
+        self.ax.cla()
+        
+        # Redraw forest fire heatmap
+        sns.heatmap(ax=self.ax, data=self.env.grid, cbar=False, cmap=self.cmap, norm=self.norm)
+        
+        # Redraw boids scatterplot
+        x = [boid.position[0] for boid in self.env.swarm.boids]
+        y = [boid.position[1] for boid in self.env.swarm.boids]
+        self.scatter = plt.scatter(x, y, marker=self.boid_marker)
+        
+        # Update the boids
+        offsets, markers = self.env.update()
+        self.scatter.set_offsets(offsets)
+        paths = [m.get_path().transformed(m.get_transform()) for m in markers]
+        self.scatter.set_paths(paths)
 
     def display_grid(self, env:Environment):
         shape=env.grid.shape

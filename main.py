@@ -5,7 +5,7 @@ import itertools
 
 def main():
     show_display=True
-    steps=20
+    steps=50
 
     env = Environment.Environment(size=(5, 5), swarm_size=10, fire_size=0.5)
     display = Display.Display(env, steps=steps)

@@ -49,7 +49,14 @@ class Environment:
     def update(self) -> None:
         """_summary_
         """        
-        self.swarm.update()
+        # TODO: Check for extinguished fire
+        
+        # For test purposes, to show that the plotting works
+        self.grid = self.create_grid((5, 5),0.5)
+        
+        offsets, markers = self.swarm.update()
+        
+        return offsets, markers
     
     def calculate_fitness(self) -> int:
         """Calculate the fitness of the simulated environment, which is based on the number of burning tiles. 
