@@ -3,7 +3,7 @@ import numpy as np
 from .State import State
 
 class Boid:
-    def __init__(self, position: np.ndarray[float], velocity: np.ndarray, grid: np.ndarray, size: float) -> None:
+    def __init__(self, position: np.ndarray, velocity: np.ndarray, grid: np.ndarray, size: float) -> None:
         self.position = position
         self.velocity = velocity
         self.size = size
