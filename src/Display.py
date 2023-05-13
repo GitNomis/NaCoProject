@@ -11,7 +11,7 @@ class Display:
         self.env = env
         self.steps = steps
 
-        self.cmap = colors.ListedColormap(['moccasin','firebrick','green','yellow'])
+        self.cmap = colors.ListedColormap(['moccasin','firebrick','deepskyblue','yellow'])
         bounds=[-0.5, 0.5, 1.5, 2.5, 3.5]
         self.norm = colors.BoundaryNorm(bounds, self.cmap.N)
         self.interval = 100
