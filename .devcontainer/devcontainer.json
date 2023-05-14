@@ -2,7 +2,8 @@
 	"name": "NaCoProjectContainer",
 	"runArgs": [
 		"--gpus",
-		"all"
+		"all",
+		"--env=\"DISPLAY\""
 	],
 	"build": {
 		"context": "..",
@@ -20,7 +21,8 @@
 			"extensions": [
 				"ms-python.python",
 				"visualstudioexptteam.vscodeintellicode",
-				"ms-python.vscode-pylance"
+				"ms-python.vscode-pylance",
+				"njpwerner.autodocstring"
 			]
 		}
 	}

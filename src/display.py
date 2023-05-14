@@ -1,13 +1,24 @@
-from .Environment import Environment
-from .State import State
-
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .environment import Environment
+    
 import matplotlib.pyplot as plt
 from matplotlib import colors, animation
 import seaborn as sns
+from .state import State
+
+
 
 class Display:
 
     def __init__(self, env:Environment, steps:int) -> None:
+        """Display class with different ways of displaying an environment.
+
+        Args:
+            env (Environment): environment to display
+            steps (int): number of steps
+        """
         self.env = env
         self.steps = steps
 
@@ -17,7 +28,7 @@ class Display:
         self.interval = 100
         self.boid_marker = ">"
 
-    def display(self):
+    def display(self)-> None:
         fig, self.ax = plt.subplots(1, 1, figsize=(5, 5))
         self.ax.set_xlim([0,self.env.grid.shape[0]])
         self.ax.set_ylim([0,self.env.grid.shape[1]])
@@ -38,7 +49,7 @@ class Display:
         plt.pause(self.steps * self.interval * 0.001) # pause (s) = frames * interval (ms) * 0.001
         plt.close(fig)
         
-    def animate(self, i:int):
+    def animate(self, i:int)-> None:
         # Clear axes
         self.ax.cla()
         
@@ -56,7 +67,7 @@ class Display:
         paths = [m.get_path().transformed(m.get_transform()) for m in markers]
         self.scatter.set_paths(paths)
 
-    def display_grid(self, env:Environment):
+    def display_grid(self, env:Environment)-> None:
         shape=env.grid.shape
         res = ""
         for y in range(shape[0]):

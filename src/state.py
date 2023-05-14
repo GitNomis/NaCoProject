@@ -2,6 +2,11 @@ from typing import List
 from enum import Enum
 
 class State(Enum):
+    """
+    State Enum of a cells state with in cellular automata
+    Returns:
+        State: grid cell state
+    """
     BARREN = 0
     FIRE = 1
     WATER = 2
