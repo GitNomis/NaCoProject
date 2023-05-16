@@ -6,12 +6,9 @@ if TYPE_CHECKING:
 from typing import List
 import numpy as np
 from sklearn.neighbors import KDTree
-from matplotlib.markers import MarkerStyle
 import random
 
 from .boid import Boid
-
-
 
 
 class Swarm:
@@ -41,7 +38,6 @@ class Swarm:
         velocities = np.array([boid.velocity for boid in self.boids])
         force_vector = np.zeros(velocities.shape)
 
-        # FIXME: Boids cannot "look around the corner", behaviour changes when boids wrap to other side of the field
         for rule in self.rules:
             force_vector += rule.weight * rule.apply(self, velocities)
 
@@ -50,20 +46,6 @@ class Swarm:
             boid.update()
             
         self.kdtree=self.construct_KDTree()
-        
-        # Animation -------------------
-        offsets = []
-        markers = []
-        
-        for boid in self.boids:
-            offsets.append([boid.position[0], boid.position[1]])
-            marker = MarkerStyle(">")
-            marker._transform = marker.get_transform().rotate_deg(np.angle(complex(*boid.direction),True))
-            marker._transform = marker.get_transform().scale(2, 2)
-            markers.append(marker)
-        
-        # -----------------------------
-        return offsets, markers
     
     def evolve() -> None:
         pass

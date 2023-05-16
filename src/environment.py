@@ -1,5 +1,4 @@
-from enum import Enum
-from typing import Tuple, Union, Optional, List
+from typing import Tuple, Union, Optional
 import numpy as np
 
 from . import rule
@@ -27,7 +26,8 @@ class Environment:
         """      
         self.n_tiles = size[0] * size[1]  
         self.grid = self.create_grid(size=size, fire_size=fire_size, water_size=water_size)
-        rules = [rule.Alignment(), rule.Cohesion(), rule.Separation()]
+        # rules = [rule.Alignment(), rule.Cohesion(), rule.Separation()]
+        rules = []
         self.swarm = Swarm(grid=self.grid, vision_range = 10, nboids=swarm_size, rules=rules)
 
 
@@ -57,19 +57,12 @@ class Environment:
         water_coordinates = (tuple(ys[n_burning_tiles:]), tuple(xs[n_burning_tiles:]))
         grid[water_coordinates] = State.WATER.value
 
-        return grid
+        return grid        
 
     def update(self) -> None:
-        """_summary_
+        """Update the environment.
         """        
-        # TODO: Check for extinguished fire
-        
-        # For test purposes, to show that the plotting works
-        self.grid = self.create_grid((5, 5), 0.5, 4)
-        
-        offsets, markers = self.swarm.update()
-        
-        return offsets, markers
+        self.swarm.update()
     
     def calculate_fitness(self) -> int:
         """Calculate the fitness of the simulated environment, which is based on the number of burning tiles. 

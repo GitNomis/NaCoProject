@@ -4,9 +4,9 @@ import itertools
 
 def main():
     show_display=True
-    steps=50
+    steps=100
 
-    env = Environment(size=(5, 5), swarm_size=10, fire_size=0.5, water_size=4)
+    env = Environment(size=(5, 5), swarm_size=1, fire_size=1, water_size=1)
     display = Display(env, steps=steps)
 
     if show_display:
