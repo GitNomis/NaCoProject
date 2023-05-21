@@ -37,12 +37,11 @@ class Display:
 
         # Forest fire heatmap
         sns.heatmap(self.env.grid.T, cbar=False, cmap=self.cmap, norm=self.norm)
-        # plt.imshow(self.env.grid)
         
         # Boids scatterplot
         x = [boid.position[0] for boid in self.env.swarm.boids]
         y = [boid.position[1] for boid in self.env.swarm.boids]
-        self.scatter = plt.scatter(x, y, marker=self.boid_marker)
+        self.scatter = plt.scatter(x, y, marker=self.boid_marker, color="grey")
 
         # Animation
         animator = animation.FuncAnimation(fig, self.animate, interval=self.interval, frames=self.steps, repeat=False, cache_frame_data=False)
@@ -59,12 +58,11 @@ class Display:
         
         # Redraw forest fire heatmap
         sns.heatmap(ax=self.ax, data=self.env.grid.T, cbar=False, cmap=self.cmap, norm=self.norm)
-        # plt.imshow(self.env.grid)
         
         # Redraw boids scatterplot
         x = [boid.position[0] for boid in self.env.swarm.boids]
         y = [boid.position[1] for boid in self.env.swarm.boids]
-        self.scatter = plt.scatter(x, y, marker=self.boid_marker)
+        self.scatter = plt.scatter(x, y, marker=self.boid_marker, color="grey")
         
         # Update the boids
         self.env.update()
@@ -72,13 +70,20 @@ class Display:
         # TODO: Add updating direction for plotting
         offsets = []
         markers = []
+        colors = []
         
         for boid in self.env.swarm.boids:
             offsets.append([boid.position[0], boid.position[1]])
             marker = MarkerStyle(">")
             marker._transform = marker.get_transform().rotate_deg(np.angle(complex(*boid.velocity),True))
             marker._transform = marker.get_transform().scale(2, 2)
+            if boid.carrying_water:
+                colors.append("blue")
+            else:
+                colors.append("grey")
             markers.append(marker)
+            
+        self.scatter.set_color(colors)
         
         self.scatter.set_offsets(offsets)
         paths = [m.get_path().transformed(m.get_transform()) for m in markers]
