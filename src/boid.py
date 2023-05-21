@@ -32,8 +32,6 @@ class Boid:
         # Swarm updates velocity vector, so boid does not think.
         self.position += self.velocity * 0.1
 
-        print(self.carrying_water)
-
         if not self.border_handling():
 
             # Extinguish fire

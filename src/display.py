@@ -31,13 +31,13 @@ class Display:
         self.boid_marker = ">"
 
     def display(self)-> None:
-        fig, self.ax = plt.subplots(1, 1, figsize=(5, 5))
+        fig, self.ax = plt.subplots(1, 1, figsize=(self.env.grid.shape[0], self.env.grid.shape[1]))
         self.ax.set_xlim([0,self.env.grid.shape[0]])
         self.ax.set_ylim([0,self.env.grid.shape[1]])
 
         # Forest fire heatmap
-        # sns.heatmap(self.env.grid, cbar=False, cmap=self.cmap, norm=self.norm)
-        plt.imshow(self.env.grid)
+        sns.heatmap(self.env.grid.T, cbar=False, cmap=self.cmap, norm=self.norm)
+        # plt.imshow(self.env.grid)
         
         # Boids scatterplot
         x = [boid.position[0] for boid in self.env.swarm.boids]
@@ -58,8 +58,8 @@ class Display:
         self.ax.cla()
         
         # Redraw forest fire heatmap
-        # sns.heatmap(ax=self.ax, data=self.env.grid, cbar=False, cmap=self.cmap, norm=self.norm)
-        plt.imshow(self.env.grid)
+        sns.heatmap(ax=self.ax, data=self.env.grid.T, cbar=False, cmap=self.cmap, norm=self.norm)
+        # plt.imshow(self.env.grid)
         
         # Redraw boids scatterplot
         x = [boid.position[0] for boid in self.env.swarm.boids]
