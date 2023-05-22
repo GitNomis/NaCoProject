@@ -1,5 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
+from sklearn.preprocessing import normalize
 if TYPE_CHECKING:
     from .rule import Rule
     from .evolution import Environment
@@ -40,14 +42,17 @@ class Swarm:
     
     def update(self) -> None:
         velocities = np.array([boid.velocity for boid in self.boids])
+        neighbours_idx,_=self.kdtree.query_radius([boid.position for boid in self.boids],r=self.vision_range,return_distance=True,sort_results=True)
         force_vector = np.zeros(velocities.shape)
 
         for rule in self.rules.values():
-            force_vector += rule.weight * rule.apply(self, velocities)
+            force_vector += rule.weight * rule.apply(self, velocities,neighbours_idx)
 
         for i, boid in enumerate(self.boids):
             boid.velocity += force_vector[i]
+            if np.linalg.norm(boid.velocity) > 4:
+               boid.velocity=normalize([boid.velocity],axis=1)[0]*4
             boid.update()
 
         self.env.update()    
-        self.kdtree=self.construct_KDTree()
+        

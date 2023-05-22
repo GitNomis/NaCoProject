@@ -21,7 +21,7 @@ class Rule:
         self.weight = weight
         self.std = std
 
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float]) -> np.ndarray[float]:
+    def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         pass
 
     @staticmethod
@@ -43,13 +43,13 @@ class Alignment(Rule):
     def __init__(self, **params):
         super().__init__(**params)
 
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float]) -> np.ndarray[float]:
+    def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
-        for i, boid in enumerate(swarm.boids):
-            neighbours_idx = swarm.kdtree.query_radius(
-                boid.position[np.newaxis, :], r=swarm.vision_range)[0]
-            force_vector[i] = np.mean(
-                [b.velocity for b in swarm.boids[neighbours_idx]]) - boid.velocity
+        for i, n_idx in enumerate(neighbours_idx):
+            n_idx = n_idx[n_idx!=i]
+            if n_idx.size == 0:
+                continue
+            force_vector[i] = np.mean([b.velocity for b in swarm.boids[n_idx]])
         return force_vector
 
     @staticmethod
@@ -73,13 +73,13 @@ class Cohesion(Rule):
         super().__init__(**params)
         self.strength = strength
 
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float]) -> np.ndarray[float]:
+    def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
-        for i, boid in enumerate(swarm.boids):
-            neighbours_idx = swarm.kdtree.query_radius(
-                boid.position[np.newaxis, :], r=swarm.vision_range)[0]
-            force_vector[i] = np.mean(
-                [b.position for b in swarm.boids[neighbours_idx]]) - boid.position
+        for i, n_idx in enumerate(neighbours_idx):
+            n_idx = n_idx[n_idx!=i]
+            if n_idx.size == 0:
+                continue
+            force_vector[i] = np.mean([b.position for b in swarm.boids[n_idx]]) - swarm.boids[i].position
         force_vector = normalize(force_vector, axis=1) * self.strength
         return force_vector
 
@@ -106,14 +106,13 @@ class Separation(Rule):
         super().__init__(**params)
         self.strength = strength
 
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float]) -> np.ndarray[float]:
+    def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
-        for i, boid in enumerate(swarm.boids):
-            dist, neighbours_idx = swarm.kdtree.query(
-                boid.position[np.newaxis, :], k=2, sort_results=True)
-            if neighbours_idx.shape[1] == 1 or dist[0, 1] > swarm.vision_range:
+        for i, n_idx in enumerate(neighbours_idx):
+            n_idx = n_idx[n_idx!=i]
+            if n_idx.size == 0:
                 continue
-            force_vector[i] = boid.position - swarm.boids[neighbours_idx[0, 1]].position
+            force_vector[i] = swarm.boids[i].position - swarm.boids[n_idx[0]].position
         force_vector = normalize(force_vector, axis=1) * self.strength
         return force_vector
 
