@@ -2,8 +2,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .rule import Rule
+    from .evolution import Environment
 
-from typing import List
+
+from typing import List,Dict
 import numpy as np
 from sklearn.neighbors import KDTree
 import random
@@ -13,11 +15,12 @@ from .boid import Boid
 
 class Swarm:
     boids:List[Boid]
-    rules:List[Rule]
+    rules:Dict[object,Rule]
     vision_range:int
     kdtree:KDTree
+    env:Environment
 
-    def __init__(self, grid: np.ndarray[int], vision_range: float, nboids: int, rules: List[Rule]) -> None:
+    def __init__(self, env: Environment, vision_range: float, nboids: int, rules: List[Rule]) -> None:
         """ Swarm class representing a group of boids with shared behaviour
 
         Args:
@@ -26,10 +29,11 @@ class Swarm:
             nboids (int): the number of boids within the swarm
             rules (List[Rule]): the list of rules that the boids follow
         """
-        self.boids = np.array([Boid(np.array(np.random.uniform([0, grid.shape[0]-1.01])), np.array([1, 1], dtype=float), grid, 1) for _ in range(nboids)])
-        self.rules = rules
+        self.boids = np.array([Boid(np.array(np.random.uniform([0, env.grid.shape[0]-1.01])), np.array([1, 1], dtype=float), env.grid, 1) for _ in range(nboids)])
+        self.rules = dict((type(r),r) for r in rules)
         self.vision_range = vision_range
         self.kdtree = self.construct_KDTree()
+        self.env = env
 
     def construct_KDTree(self) -> KDTree:
         return KDTree([boid.position for boid in self.boids])
@@ -38,15 +42,12 @@ class Swarm:
         velocities = np.array([boid.velocity for boid in self.boids])
         force_vector = np.zeros(velocities.shape)
 
-        for rule in self.rules:
+        for rule in self.rules.values():
             force_vector += rule.weight * rule.apply(self, velocities)
 
         for i, boid in enumerate(self.boids):
             boid.velocity += force_vector[i]
             boid.update()
-            
-        self.kdtree=self.construct_KDTree()
-    
-    def evolve() -> None:
-        pass
 
+        self.env.update()    
+        self.kdtree=self.construct_KDTree()

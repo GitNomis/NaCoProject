@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from .swarm import Swarm
     from .environment import Environment
     
 import matplotlib.pyplot as plt
@@ -14,14 +15,14 @@ from .state import State
 
 class Display:
 
-    def __init__(self, env:Environment, steps:int) -> None:
+    def __init__(self, swarm:Swarm, steps:int) -> None:
         """Display class with different ways of displaying an environment.
 
         Args:
             env (Environment): environment to display
             steps (int): number of steps
         """
-        self.env = env
+        self.swarm = swarm
         self.steps = steps
 
         self.cmap = colors.ListedColormap(['moccasin','firebrick','deepskyblue','yellow'])
@@ -32,16 +33,16 @@ class Display:
 
     def display(self)-> None:
         fig, self.ax = plt.subplots(1, 1, figsize=(5, 5))
-        self.ax.set_xlim([0,self.env.grid.shape[0]])
-        self.ax.set_ylim([0,self.env.grid.shape[1]])
+        self.ax.set_xlim([0,self.swarm.env.grid.shape[0]])
+        self.ax.set_ylim([0,self.swarm.env.grid.shape[1]])
 
         # Forest fire heatmap
         # sns.heatmap(self.env.grid, cbar=False, cmap=self.cmap, norm=self.norm)
-        plt.imshow(self.env.grid)
+        plt.imshow(self.swarm.env.grid)
         
         # Boids scatterplot
-        x = [boid.position[0] for boid in self.env.swarm.boids]
-        y = [boid.position[1] for boid in self.env.swarm.boids]
+        x = [boid.position[0] for boid in self.swarm.boids]
+        y = [boid.position[1] for boid in self.swarm.boids]
         self.scatter = plt.scatter(x, y, marker=self.boid_marker)
 
         # Animation
@@ -59,21 +60,21 @@ class Display:
         
         # Redraw forest fire heatmap
         # sns.heatmap(ax=self.ax, data=self.env.grid, cbar=False, cmap=self.cmap, norm=self.norm)
-        plt.imshow(self.env.grid)
+        plt.imshow(self.swarm.env.grid)
         
         # Redraw boids scatterplot
-        x = [boid.position[0] for boid in self.env.swarm.boids]
-        y = [boid.position[1] for boid in self.env.swarm.boids]
+        x = [boid.position[0] for boid in self.swarm.boids]
+        y = [boid.position[1] for boid in self.swarm.boids]
         self.scatter = plt.scatter(x, y, marker=self.boid_marker)
         
         # Update the boids
-        self.env.update()
+        self.swarm.update()
 
         # TODO: Add updating direction for plotting
         offsets = []
         markers = []
         
-        for boid in self.env.swarm.boids:
+        for boid in self.swarm.boids:
             offsets.append([boid.position[0], boid.position[1]])
             marker = MarkerStyle(">")
             marker._transform = marker.get_transform().rotate_deg(np.angle(complex(*boid.velocity),True))
