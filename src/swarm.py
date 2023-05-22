@@ -29,8 +29,8 @@ class Swarm:
             nboids (int): the number of boids within the swarm
             rules (List[Rule]): the list of rules that the boids follow
         """
-        self.boids = np.array([Boid(np.array(np.random.uniform([0, env.grid.shape[0]-1.01])), np.array([1, 1], dtype=float), env.grid, 1) for _ in range(nboids)])
-        self.rules = dict((type(r),r) for r in rules)
+        self.boids = np.array([Boid(np.array(np.random.uniform(0, env.grid.shape[0]-1.01, 2)), np.random.uniform(-1, 1, 2), env.grid, 1) for _ in range(nboids)])
+        self.rules = dict((type(r), r) for r in rules)
         self.vision_range = vision_range
         self.kdtree = self.construct_KDTree()
         self.env = env

@@ -111,10 +111,9 @@ class Separation(Rule):
         for i, boid in enumerate(swarm.boids):
             dist, neighbours_idx = swarm.kdtree.query(
                 boid.position[np.newaxis, :], k=2, sort_results=True)
-            if neighbours_idx.shape[0] == 1 or dist[1] > swarm.vision_range:
+            if neighbours_idx.shape[1] == 1 or dist[0, 1] > swarm.vision_range:
                 continue
-            force_vector[i] = boid.position - \
-                swarm.boids[neighbours_idx[0, 1]].position
+            force_vector[i] = boid.position - swarm.boids[neighbours_idx[0, 1]].position
         force_vector = normalize(force_vector, axis=1) * self.strength
         return force_vector
 

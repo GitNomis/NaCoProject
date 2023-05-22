@@ -41,6 +41,8 @@ class Boid:
             # FIXME: Solve rounding causing out-of-bounds errors
             if not self.carrying_water and np.random.random() < self.pickup_chance:
                 self.get_water()
+        else:
+            self.position += self.velocity * 0.2
 
     def on_fire(self) -> bool:
         """Verifies whether the Boid is located on a fire tile.
@@ -75,3 +77,17 @@ class Boid:
             return True
         
         return False
+    
+    def rigid_border(self, position: np.ndarray[float]) -> np.ndarray[float]:
+        """Prevent the boid from going out of bounds. 
+
+        Arguments:
+            position (np.array[float]) -- The boid's x, y position
+
+        Returns:
+            the corrected position of the boid
+        """        
+        for i in range(position.shape[0]):
+            position[i] = max(position[i], 0)
+            position[i] = min(position[i], self.grid.shape[0])
+        return position

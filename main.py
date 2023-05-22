@@ -3,7 +3,7 @@ from src import *
 def main():
     show_display=True
     steps=100
-    infinite=True
+    infinite=False
 
     env = Environment.example(size=(5, 5), fire_size=1, water_size=1)
     evo = Evolution(env,10)
