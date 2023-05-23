@@ -34,7 +34,7 @@ class Display:
         self.boid_marker = ">"
 
     def display(self)-> None:
-        fig, self.ax = plt.subplots(1, 1, figsize=(self.swarm.env.grid.shape[0], self.swarm.env.grid.shape[1]))
+        fig, self.ax = plt.subplots(1, 1, figsize=(5, 5))
 
         # Forest fire
         plt.imshow(np.flip(self.swarm.env.grid.T, 0), cmap=self.cmap, norm=self.norm, origin="lower", extent=(0, self.swarm.env.grid.shape[0], self.swarm.env.grid.shape[1], 0))
