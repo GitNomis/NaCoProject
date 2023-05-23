@@ -7,9 +7,10 @@ class Environment:
     n_tiles:int
     grid:np.ndarray[State]
         
-    def __init__(self,n_tiles:int,grid:np.ndarray[State]):
+    def __init__(self,n_tiles:int,n_fires:int,grid:np.ndarray[State]):
         self.n_tiles=n_tiles
         self.grid=grid   
+        self.n_fires=n_fires
 
     @classmethod
     def example(cls, size: Tuple[int, int], fire_size: Optional[Union[int, float]] = 1, water_size: Optional[Union[int, float]] = 1):
@@ -28,7 +29,7 @@ class Environment:
         """      
         n_tiles = size[0] * size[1]  
         grid = cls.create_grid(n_tiles=n_tiles,size=size, fire_size=fire_size, water_size=water_size)     
-        return Environment(n_tiles,grid)
+        return Environment(n_tiles,fire_size,grid)
 
     @staticmethod
     def create_grid(n_tiles:int, size: Tuple[int, int], fire_size: Union[int, float], water_size: Union[int, float]) -> np.ndarray[State]:
@@ -51,11 +52,11 @@ class Environment:
         xs = np.random.randint(0, size[1], size=n_burning_tiles+n_water_tiles)
         ys = np.random.randint(0, size[0], size=n_burning_tiles+n_water_tiles)
 
-        fire_coordinates = (tuple(ys[:n_burning_tiles]), tuple(xs[:n_burning_tiles]))
-        grid[fire_coordinates] = State.FIRE.value
-
         water_coordinates = (tuple(ys[n_burning_tiles:]), tuple(xs[n_burning_tiles:]))
         grid[water_coordinates] = State.WATER.value
+
+        fire_coordinates = (tuple(ys[:n_burning_tiles]), tuple(xs[:n_burning_tiles]))
+        grid[fire_coordinates] = State.FIRE.value
 
         return grid        
 
@@ -71,10 +72,14 @@ class Environment:
         Returns:
             int: the fitness of the simulated environment. 
         """        
-        return self.n_tiles - np.sum(self.grid)
+        return -self.n_fires
     
     def copy(self):
-        return Environment(self.n_tiles,self.grid.copy())
+        return Environment(self.n_tiles,self.n_fires,self.grid.copy())
+    
+    def contains_fire(self) -> bool:
+        return self.n_fires>0
+
 
 
 

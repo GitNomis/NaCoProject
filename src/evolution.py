@@ -22,9 +22,8 @@ class Evolution:
         self.environment = environment
         self.generation = 0
 
-    def evolve(self) -> None:
-        fitness = np.array([swarm.env.calculate_fitness()
-                           for swarm in self.population])
+    def evolve(self, n_iters) -> None:
+        fitness = self.calculate_fitness(n_iters=n_iters)
         candidates = np.random.choice(
             self.population, p=fitness/fitness.sum(), size=(self.population_size, 2), replace=True)
         new_generation = []
@@ -36,11 +35,9 @@ class Evolution:
         self.generation += 1
 
         return fitness
-    
-    def simulate(self,n_iters):
-        for _ in range(n_iters):
-            for s in self.population:
-                s.update()
+
+    def calculate_fitness(self, n_iters) -> np.ndarray[int]:
+        return  np.array([swarm.simulate(n_iters=n_iters) for swarm in self.population])+self.environment.n_fires+1
 
     def crossover(self, parent1: Swarm, parent2: Swarm) -> Swarm:
         rule_types = parent1.rules.keys() | parent2.rules.keys()
