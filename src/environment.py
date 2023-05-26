@@ -1,17 +1,21 @@
 from typing import Tuple, Union, Optional, overload
 import numpy as np
+from sklearn.neighbors import KDTree
 
 from .state import State
 
 class Environment:
     n_tiles:int
     grid:np.ndarray[State]
+    n_fires:int
+    water_tree:KDTree
         
     def __init__(self,n_tiles:int,n_fires:int,grid:np.ndarray[State]):
         self.n_tiles=n_tiles
         self.grid=grid   
         self.n_fires=n_fires
-
+        self.water_tree=self.get_water_tree()
+    
     @classmethod
     def example(cls, size: Tuple[int, int], fire_size: Optional[Union[int, float]] = 1, water_size: Optional[Union[int, float]] = 1):
         """Create an environment containing a cellular automaton with a swarm of Boids superimposed on it. 
@@ -46,19 +50,22 @@ class Environment:
             np.ndarray: A representation of the cellular automaton. 
         """        
         grid = np.zeros(shape=size)
+
+        coordinates = np.array([[x, y] for x in range(size[0]) for y in range(size[1])])
         n_burning_tiles = int(np.floor(n_tiles * fire_size)) if fire_size < 1 else fire_size
         n_water_tiles = int(np.floor(n_tiles * water_size)) if water_size < 1 else water_size
 
-        xs = np.random.randint(0, size[1], size=n_burning_tiles+n_water_tiles)
-        ys = np.random.randint(0, size[0], size=n_burning_tiles+n_water_tiles)
+        sampled_coordinates = coordinates[np.random.choice(coordinates.shape[0], size=n_burning_tiles+n_water_tiles, replace=False)]
 
-        water_coordinates = (tuple(ys[n_burning_tiles:]), tuple(xs[n_burning_tiles:]))
-        grid[water_coordinates] = State.WATER.value
+        water_coordinates = sampled_coordinates[n_burning_tiles:]
+        for c in water_coordinates:
+            grid[tuple(c)] = State.WATER.value
 
-        fire_coordinates = (tuple(ys[:n_burning_tiles]), tuple(xs[:n_burning_tiles]))
-        grid[fire_coordinates] = State.FIRE.value
+        fire_coordinates = sampled_coordinates[:n_burning_tiles]
+        for c in fire_coordinates:
+            grid[tuple(c)] = State.FIRE.value
 
-        return grid        
+        return grid   
 
     def update(self) -> None:
         """Update the environment.
@@ -79,6 +86,14 @@ class Environment:
     
     def contains_fire(self) -> bool:
         return self.n_fires>0
+    
+    def get_water_tree(self) -> KDTree:
+        water_coordinates = []
+        for i in range(self.grid.shape[0]):
+            for j in range(self.grid.shape[1]):
+                if self.grid[i, j] == State.WATER.value:
+                    water_coordinates.append([i, j])
+        return KDTree(water_coordinates)
 
 
 
