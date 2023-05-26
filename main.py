@@ -7,7 +7,7 @@ def main():
     infinite=False
     n_iters = 100
 
-    env = Environment.example(size=(10, 10), fire_size=1, water_size=1)
+    env = Environment.example(size=(30, 30), fire_size=10, water_size=1)
     evo = Evolution(env,10)
     while evo.generation < 10: 
         fitness = evo.evolve(n_iters=n_iters)
