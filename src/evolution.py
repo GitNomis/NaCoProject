@@ -17,7 +17,7 @@ class Evolution:
     def __init__(self, environment: Environment, population_size: int):
         self.population_size = population_size
         rules = [rule.Alignment(weight=0.3) , rule.Cohesion(weight=0.5), rule.Separation(weight=0.4, strength=1.5), rule.GoToWater(), rule.GoToFire()]
-        self.population = [Swarm(environment.copy(), 0.5, 20, rules)
+        self.population = [Swarm(environment.copy(), 3, 20, rules)
                            for _ in range(population_size)]
         self.environment = environment
         self.generation = 0

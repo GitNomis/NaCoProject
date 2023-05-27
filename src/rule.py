@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, overload
 if TYPE_CHECKING:
     from .swarm import Swarm
+    from .boid import Boid
 
 import numpy as np
 from typing import Optional
@@ -26,6 +27,19 @@ class Rule:
 
     def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         pass
+
+
+    # TODO: I put this in rule now, but perhaps that's not the best/cleanest location
+    def to_closest_tile(self, vision_range: float, tree: KDTree, boid: Boid) -> np.ndarray[float]:
+        fire_within_vision_idx, _ = tree.query_radius([boid.position], r=vision_range, sort_results=True, return_distance=True)
+        if len(fire_within_vision_idx[0]) > 0:
+            closest_fire = tree.data[fire_within_vision_idx[0][0]]
+            force = closest_fire - boid.position
+        else:
+            force = np.zeros(2)   
+        closest_fire = tree.data[tree.query([boid.position], k=1,return_distance=False)[0,0]]
+        force = closest_fire - boid.position
+        return force    
 
     @staticmethod
     def crossover(rule: Rule, other: Rule) -> Rule:
@@ -148,8 +162,7 @@ class GoToWater(Rule):
         
         for i, boid in enumerate(swarm.boids):
             if not boid.carrying_water:
-                closest_water = swarm.env.water_tree.data[swarm.env.water_tree.query([boid.position], k=1, return_distance=False)[0, 0]]
-                force_vector[i] = closest_water - boid.position
+                force_vector[i] = self.to_closest_tile(swarm.vision_range, swarm.env.water_tree, boid)
             else: 
                 force_vector[i] = np.zeros(2)    
             force_vector = normalize(force_vector, axis=1) * self.strength
@@ -193,13 +206,11 @@ class GoToFire(Rule):
         fire_tree=KDTree(fire_coordinates)
         for i, boid in enumerate(swarm.boids):
             if boid.carrying_water:
-                closest_fire = fire_tree.data[fire_tree.query([boid.position], k=1,return_distance=False)[0,0]]
-                force_vector[i] = closest_fire - boid.position
+                force_vector[i] = self.to_closest_tile(swarm.vision_range, fire_tree, boid)
             else: 
                 force_vector[i] = np.zeros(2)    
             force_vector = normalize(force_vector, axis=1) * self.strength
         return force_vector
-    
 
     @staticmethod
     def crossover(rule: GoToFire, other: GoToFire) -> GoToFire:
