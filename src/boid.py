@@ -28,6 +28,7 @@ class Boid:
         self.pickup_chance = 0.5
 
         self.carrying_water = False
+        self.out_of_bounds_timer = 0
 
     def update(self) -> None:
         """Update the behaviour of the Boid given the environment.
@@ -71,14 +72,34 @@ class Boid:
         '''
         Bounces the boid back off the borner
         '''
-        if self.position[0] > self.env.grid.shape[0] or self.position[0] < 0:
+        horizontal_out_of_bounds = self.position[0] > self.env.grid.shape[0] or self.position[0] < 0
+        vertical_out_of_bounds = self.position[1] > self.env.grid.shape[1] or self.position[1] < 0
+        
+        # Pull the boid back into bounds if it spends too long out of bounds
+        if (horizontal_out_of_bounds or vertical_out_of_bounds) and self.out_of_bounds_timer > 5:
+            if(self.position[0] < self.env.grid.shape[0]/2):
+                self.velocity[0] = 1
+            else:
+                self.velocity[0] = -1
+            if(self.position[1] < self.env.grid.shape[1]/2):
+                self.velocity[1] = 1
+            else:
+                self.velocity[1] = -1
+            return True
+                
+        # Left and right walls
+        if horizontal_out_of_bounds:
             self.velocity *= np.array([-1, 1])
+            self.out_of_bounds_timer += 1
             return True
 
-        if self.position[1] > self.env.grid.shape[1] or self.position[1] < 0:
+        # Upper and lower walls
+        if vertical_out_of_bounds:
             self.velocity *= np.array([1, -1])
+            self.out_of_bounds_timer += 1
             return True
         
+        self.out_of_bounds_timer = 0
         return False
     
     def rigid_border(self, position: np.ndarray[float]) -> np.ndarray[float]:
