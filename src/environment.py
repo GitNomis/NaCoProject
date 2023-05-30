@@ -92,7 +92,7 @@ class Environment:
         for i in range(self.grid.shape[0]):
             for j in range(self.grid.shape[1]):
                 if self.grid[i, j] == State.WATER.value:
-                    water_coordinates.append([i, j])
+                    water_coordinates.append([i+0.5, j+0.5])
         return KDTree(water_coordinates)
 
 
