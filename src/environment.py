@@ -7,15 +7,16 @@ from .state import State
 
 class Environment:
     n_tiles:int
-    grid:np.ndarray[State]
+    grid:np.ndarray[np.int8]
     n_fires:int
     water_tree:KDTree
         
-    def __init__(self,n_tiles:int,n_fires:int,grid:np.ndarray[State]):
+    def __init__(self,n_tiles:int,n_fires:int,grid:np.ndarray[np.int8]):
         self.n_tiles=n_tiles
         self.grid=grid   
         self.n_fires=n_fires
-        self.water_tree=self.get_water_tree()
+        self.fire_tree=self.get_tree(State.FIRE.value)
+        self.water_tree=self.get_tree(State.WATER.value)
     
     @classmethod
     def example(cls, size: Tuple[int, int], fire_size: Optional[Union[int, float]] = 1, water_size: Optional[Union[int, float]] = 1):
@@ -54,7 +55,7 @@ class Environment:
 
 
     @staticmethod
-    def create_grid(n_tiles:int, size: Tuple[int, int], fire_size: Union[int, float], water_size: Union[int, float]) -> np.ndarray[State]:
+    def create_grid(n_tiles:int, size: Tuple[int, int], fire_size: Union[int, float], water_size: Union[int, float]) -> np.ndarray[np.int8]:
         """Create a numpy array to represent a cellular automaton grid.
 
         Arguments:
@@ -94,6 +95,8 @@ class Environment:
         mask=p>np.random.random(p.shape)
         self.n_fires+=mask.sum()
         self.grid= np.where(mask,State.FIRE.value,self.grid)
+        if self.n_fires > 0:
+            self.fire_tree=self.get_tree(State.FIRE.value)
     
     def calculate_fitness(self) -> int:
         """Calculate the fitness of the simulated environment, which is based on the number of burning tiles. 
@@ -110,14 +113,14 @@ class Environment:
     def contains_fire(self) -> bool:
         return self.n_fires>0
     
-    def get_water_tree(self) -> KDTree:
-        water_coordinates = []
+    def get_tree(self,value:int) -> KDTree:
+        coordinates = []
         for i in range(self.grid.shape[0]):
             for j in range(self.grid.shape[1]):
-                if self.grid[i, j] == State.WATER.value:
-                    water_coordinates.append([i+0.5, j+0.5])
-        return KDTree(water_coordinates)
-
+                if self.grid[i, j] == value:
+                    coordinates.append([i+0.5, j+0.5])
+        return KDTree(coordinates)
+    
 
 
 

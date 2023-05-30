@@ -14,11 +14,17 @@ class Evolution:
     environment: Environment
     generation: int
 
-    def __init__(self, environment: Environment, population_size: int):
+    def __init__(self, environment: Environment, population_size: int, mutate_rate:float):
         self.population_size = population_size
-        rules = [rule.Alignment(weight=0.3) , rule.Cohesion(weight=0.5), rule.Separation(weight=0.4, strength=1.5), rule.GoToWater(), rule.GoToFire()]
-        self.population = [Swarm(environment.copy(), 4,4, 20, rules)
-                           for _ in range(population_size)]
+        self.mutate_rate = mutate_rate
+        self.population = []
+        for _ in range(population_size):
+            rules = [rule.Alignment(weight=np.random.uniform(-1,3)), 
+                     rule.Cohesion(weight=np.random.uniform(-1,3)), 
+                     rule.Separation(weight=np.random.uniform(-1,3)), 
+                     rule.GoToWater(weight=np.random.uniform(-1,3)), 
+                     rule.GoToFire(weight=np.random.uniform(-1,3))]
+            self.population.append(Swarm(environment.copy(),4,4,20,rules))
         self.environment = environment
         self.generation = 0
 
@@ -43,9 +49,9 @@ class Evolution:
     def crossover(self, parent1: Swarm, parent2: Swarm) -> Swarm:
         rule_types = parent1.rules.keys() | parent2.rules.keys()
         new_rules = [rule.crossover(parent1.rules[rule], parent2.rules[rule]) for rule in rule_types]
-        return Swarm(self.environment.copy(), 4,4, 20, new_rules)
+        return Swarm(self.environment.copy(), parent1.vision_range, parent2.vision_range, len(self.population), new_rules)
 
     def mutate(self, child: Swarm) -> None:
         for rule in child.rules.keys():
-            if np.random.random()<=0.1: 
+            if np.random.random()<=self.mutate_rate: 
                 child.rules[rule].mutate()

@@ -32,7 +32,7 @@ class Swarm:
             nboids (int): the number of boids within the swarm
             rules (List[Rule]): the list of rules that the boids follow
         """
-        self.boids = np.array([Boid(np.array(np.random.uniform(0, env.grid.shape[0]-1.01, 2)), np.random.uniform(-1, 1, 2)*0.3*max_speed, env, 1) for _ in range(nboids)])
+        self.boids = np.array([Boid(np.random.uniform(0, env.grid.shape[0]-1.01, 2), np.random.uniform(-1, 1, 2)*max_speed, env, 1) for _ in range(nboids)])
         self.rules = dict((type(r), r) for r in rules)
         self.vision_range = vision_range
         self.max_speed = max_speed
