@@ -24,8 +24,9 @@ class Evolution:
 
     def evolve(self, n_iters) -> None:
         fitness = self.calculate_fitness(n_iters=n_iters)
+        p = (fitness + 1 + abs(fitness.min()))**2
         candidates = np.random.choice(
-            self.population, p=fitness/fitness.sum(), size=(self.population_size, 2), replace=True)
+            self.population, p=p/p.sum(), size=(self.population_size, 2), replace=True)
         new_generation = []
         for p1, p2 in candidates:
             child = self.crossover(p1, p2)
@@ -37,7 +38,7 @@ class Evolution:
         return fitness
 
     def calculate_fitness(self, n_iters) -> np.ndarray[int]:
-        return  (np.array([swarm.simulate(n_iters=n_iters) for swarm in self.population])+self.environment.n_fires+1)**2
+        return  np.array([swarm.simulate(n_iters=n_iters) for swarm in self.population])
 
     def crossover(self, parent1: Swarm, parent2: Swarm) -> Swarm:
         rule_types = parent1.rules.keys() | parent2.rules.keys()

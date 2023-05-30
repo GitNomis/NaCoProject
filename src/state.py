@@ -20,3 +20,6 @@ class State(Enum):
             List: All values within  the class ```cls```.
         """        
         return list(map(lambda c: c.value, cls))
+    
+    def __int__(self):
+        return self.value

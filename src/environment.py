@@ -1,6 +1,7 @@
 from typing import Tuple, Union, Optional, overload
 import numpy as np
 from sklearn.neighbors import KDTree
+from scipy.signal import convolve2d
 
 from .state import State
 
@@ -34,6 +35,23 @@ class Environment:
         n_tiles = size[0] * size[1]  
         grid = cls.create_grid(n_tiles=n_tiles,size=size, fire_size=fire_size, water_size=water_size)     
         return Environment(n_tiles,fire_size,grid)
+    
+    @classmethod
+    def from_file(cls, file_path:str):
+        with open(file_path,'r') as file:
+            nrows,ncols=[int(s) for s in file.readline().split()]
+            grid=np.empty((nrows,ncols),dtype=np.int8)
+            n_fires=0
+            for i in range(nrows):
+                line=file.readline()
+                for j in range(ncols):
+                    cell=int(line[j])
+                    grid[i,j]=cell
+                    if cell == State.FIRE.value:
+                        n_fires+=1
+            return Environment(nrows*ncols,n_fires,grid)            
+
+
 
     @staticmethod
     def create_grid(n_tiles:int, size: Tuple[int, int], fire_size: Union[int, float], water_size: Union[int, float]) -> np.ndarray[State]:
@@ -49,7 +67,7 @@ class Environment:
         Returns:
             np.ndarray: A representation of the cellular automaton. 
         """        
-        grid = np.zeros(shape=size)
+        grid = np.zeros(shape=size, dtype=np.int8)
 
         coordinates = np.array([[x, y] for x in range(size[0]) for y in range(size[1])])
         n_burning_tiles = int(np.floor(n_tiles * fire_size)) if fire_size < 1 else fire_size
@@ -70,7 +88,12 @@ class Environment:
     def update(self) -> None:
         """Update the environment.
         """        
-        pass
+        fires=np.where(self.grid==State.FIRE.value,1,0)
+        kernel= np.array([[1,4,1],[4,0,4],[1,4,1]])*0.001
+        p=np.where(self.grid==State.TREE.value,convolve2d(fires,kernel,mode='same'),0)
+        mask=p>np.random.random(p.shape)
+        self.n_fires+=mask.sum()
+        self.grid= np.where(mask,State.FIRE.value,self.grid)
     
     def calculate_fitness(self) -> int:
         """Calculate the fitness of the simulated environment, which is based on the number of burning tiles. 
