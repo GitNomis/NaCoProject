@@ -27,11 +27,12 @@ class Display:
         self.steps = steps
         self.infinite = infinite
 
-        self.cmap = colors.ListedColormap(['moccasin','firebrick','deepskyblue','yellow'])
+        self.cmap = colors.ListedColormap(['peru','firebrick','dodgerblue','forestgreen'])
         bounds=[-0.5, 0.5, 1.5, 2.5, 3.5]
         self.norm = colors.BoundaryNorm(bounds, self.cmap.N)
         self.interval = 100
         self.boid_marker = ">"
+        self.boid_color = ["darkgray","deepskyblue"]
 
     def display(self)-> None:
         fig, self.ax = plt.subplots(1, 1, figsize=(5, 5))
@@ -41,7 +42,7 @@ class Display:
         # Boids scatterplot
         x = [boid.position[0] for boid in self.swarm.boids]
         y = [boid.position[1] for boid in self.swarm.boids]
-        self.scatter = plt.scatter(x, y, marker=self.boid_marker, color="grey")
+        self.scatter = plt.scatter(x, y, marker=self.boid_marker, color=self.boid_color[0])
 
         self.ax.invert_yaxis()
         plt.tight_layout()
@@ -72,7 +73,7 @@ class Display:
         # Redraw boids scatterplot
         x = [boid.position[0] for boid in self.swarm.boids]
         y = [boid.position[1] for boid in self.swarm.boids]
-        self.scatter = plt.scatter(x, y, marker=self.boid_marker, color="grey")
+        self.scatter = plt.scatter(x, y, marker=self.boid_marker, color=self.boid_color[0])
 
         offsets = []
         markers = []
@@ -84,9 +85,9 @@ class Display:
             marker._transform = marker.get_transform().rotate_deg(np.angle(complex(*boid.velocity),True))
             marker._transform = marker.get_transform().scale(2, 2)
             if boid.carrying_water:
-                colors.append("blue")
+                colors.append(self.boid_color[1])
             else:
-                colors.append("grey")
+                colors.append(self.boid_color[0])
             markers.append(marker)
             
         self.scatter.set_color(colors)
