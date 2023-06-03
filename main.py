@@ -1,15 +1,15 @@
 import numpy as np
 from src import *
-
+@profile
 def main():
     show_display=True
-    steps=300
+    steps=500
     infinite=False
-    n_iters = 200
+    n_iters = 100
 
     env = Environment.example(size=(20, 20), fire_size=10, water_size=2)
     env = Environment.from_file(r'grid_files\presentation.in')
-    evo = Evolution(env,10,0.1)
+    evo = Evolution(env,20,0.1)
     while evo.generation < 20: 
         fitness = evo.evolve(n_iters=n_iters)
         print(f"Gen {evo.generation-1:>3}: Avg: {np.mean(fitness)}, Max: {np.max(fitness)}")
