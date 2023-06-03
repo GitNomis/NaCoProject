@@ -1,12 +1,11 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .swarm import Swarm
     from .boid import Boid
 
 import numpy as np
 from typing import Optional
-from sklearn.preprocessing import normalize
 from sklearn.neighbors import KDTree
 
 from .state import State
@@ -25,19 +24,8 @@ class Rule:
         self.weight = weight
         self.std = std
 
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+    def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         pass
-
-
-    # TODO: I put this in rule now, but perhaps that's not the best/cleanest location
-    def to_closest_tile(self, vision_range: float, tree: KDTree, boid: Boid) -> np.ndarray[float]:
-        fire_within_vision_idx, _ = tree.query_radius([boid.position], r=vision_range, sort_results=True, return_distance=True)
-        if len(fire_within_vision_idx[0]) > 0:
-            closest_fire = tree.data[fire_within_vision_idx[0][0]]
-            force = closest_fire - boid.position
-        else:
-            force = np.zeros(2)   
-        return force    
 
     @staticmethod
     def crossover(rule: Rule, other: Rule) -> Rule:
@@ -55,19 +43,19 @@ class Alignment(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
-
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+    @profile
+    def apply(self, swarm: Swarm,positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
             if n_idx.size > 0:
-                force_vector[i] = np.mean([b.velocity for b in swarm.boids[n_idx]],axis=0)
+                force_vector[i] = np.mean(velocities[n_idx,:],axis=0)
         return force_vector
 
     @staticmethod
     def crossover(rule: Alignment, other: Alignment) -> Alignment:
         new_rule = super().crossover(rule, other)
         new_rule.__class__ = Alignment
-
+    
         return new_rule
     
     def __str__(self):
@@ -80,13 +68,14 @@ class Cohesion(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
-
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+    @profile
+    def apply(self, swarm: Swarm,positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
             if n_idx.size > 0:
-                force_vector[i] = np.mean([b.position for b in swarm.boids[n_idx]],axis=0) - swarm.boids[i].position
-        force_vector = normalize(force_vector, axis=1)
+                force_vector[i] = np.mean(positions[n_idx,:],axis=0) - swarm.boids[i].position
+        norm=np.linalg.norm(force_vector,axis=1)[:,np.newaxis]
+        force_vector=np.divide(force_vector,norm,where=norm>0)
         return force_vector
 
     @staticmethod
@@ -104,13 +93,15 @@ class Separation(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
-
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+    @profile
+    def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
             if n_idx.size > 0:
                 force_vector[i] = swarm.boids[i].position - swarm.boids[n_idx[0]].position 
-        force_vector = normalize(force_vector, axis=1)
+        norm=np.linalg.norm(force_vector,axis=1)[:,np.newaxis]
+        force_vector=np.divide(force_vector,norm,where=norm>0) 
+
         return force_vector
 
     @staticmethod
@@ -128,14 +119,20 @@ class GoToWater(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
-
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float], neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+    @profile
+    def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float], neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)    
-        
-        for i, boid in enumerate(swarm.boids):
-            if not boid.carrying_water:
-                force_vector[i] = self.to_closest_tile(swarm.vision_range, swarm.env.water_tree, boid)
-            force_vector = normalize(force_vector, axis=1) 
+        no_water_idx = np.nonzero([not b.carrying_water for b in swarm.boids])
+        if no_water_idx[0].size == 0: 
+            return force_vector 
+        water_within_vision_idx, _ = swarm.env.water_tree.query_radius(positions[no_water_idx], r=swarm.vision_range, sort_results=True, return_distance=True)
+
+        for i,closest_waters in zip(no_water_idx,water_within_vision_idx):
+            if closest_waters.size>0:
+                force_vector[i]=swarm.env.water_tree.data[closest_waters[0]]-positions[i]
+       
+        norm=np.linalg.norm(force_vector,axis=1)[:,np.newaxis]
+        force_vector=np.divide(force_vector,norm,where=norm>0)
         return force_vector
 
     @staticmethod
@@ -152,16 +149,20 @@ class GoToFire(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
+    @profile
+    def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float], neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+        force_vector = np.zeros(velocities.shape)        
+        water_idx = np.nonzero([b.carrying_water for b in swarm.boids])
+        if swarm.env.n_fires == 0 or water_idx[0].size == 0: 
+            return force_vector  
+        fire_within_vision_idx, _ = swarm.env.fire_tree.query_radius(positions[water_idx], r=swarm.vision_range, sort_results=True, return_distance=True)
 
-    def apply(self, swarm: Swarm, velocities: np.ndarray[float], neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
-        force_vector = np.zeros(velocities.shape)   
-        if swarm.env.n_fires == 0: 
-            return force_vector
-        
-        for i, boid in enumerate(swarm.boids):
-            if boid.carrying_water:
-                force_vector[i] = self.to_closest_tile(swarm.vision_range, swarm.env.fire_tree, boid)
-            force_vector = normalize(force_vector, axis=1)
+        for i,closest_fires in zip(water_idx,fire_within_vision_idx):
+            if closest_fires.size>0:
+                force_vector[i]=swarm.env.fire_tree.data[closest_fires[0]]-positions[i]
+               
+        norm=np.linalg.norm(force_vector,axis=1)[:,np.newaxis]
+        force_vector=np.divide(force_vector,norm,where=norm>0)
         return force_vector
 
     @staticmethod
