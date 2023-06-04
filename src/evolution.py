@@ -28,8 +28,8 @@ class Evolution:
         self.environment = environment
         self.generation = 0
 
-    def evolve(self, n_iters) -> None:
-        fitness = self.calculate_fitness(n_iters=n_iters)
+    def evolve(self, n_iters,reps=1) -> None:
+        fitness = self.calculate_fitness(n_iters=n_iters,reps=reps)
         p = (fitness + 1 + abs(fitness.min()))**2
         candidates = np.random.choice(
             self.population, p=p/p.sum(), size=(self.population_size, 2), replace=True)
@@ -43,8 +43,13 @@ class Evolution:
 
         return fitness
 
-    def calculate_fitness(self, n_iters) -> np.ndarray[int]:
-        return  np.array([swarm.simulate(n_iters=n_iters) for swarm in self.population])
+    def calculate_fitness(self, n_iters,reps=1) -> np.ndarray[int]:
+        fitness = np.zeros(self.population_size)    
+        for _ in range(reps):
+            fitness += np.array([swarm.simulate(n_iters=n_iters) for swarm in self.population])
+            for s in self.population:
+                s.reset(self.environment.copy())
+        return  fitness/reps
 
     def crossover(self, parent1: Swarm, parent2: Swarm) -> Swarm:
         rule_types = parent1.rules.keys() | parent2.rules.keys()

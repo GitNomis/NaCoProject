@@ -38,6 +38,12 @@ class Swarm:
         self.kdtree = self.construct_KDTree()
         self.env = env
 
+    def reset(self,env:Environment):
+        self.boids = np.array([Boid(np.random.uniform(0, env.grid.shape[0]-1.01, 2), np.random.uniform(-1, 1, 2)*self.max_speed, env, 1) for _ in self.boids])
+        self.kdtree = self.construct_KDTree()
+        self.env=env
+
+
     def construct_KDTree(self) -> KDTree:
         return KDTree([boid.position for boid in self.boids])
     
@@ -47,7 +53,7 @@ class Swarm:
             if not self.env.contains_fire():
                 return (n_iters - iter) + self.env.calculate_fitness()
         return self.env.calculate_fitness()
-    @profile
+    
     def update(self) -> None:
         velocities = np.array([boid.velocity for boid in self.boids])
         positions = np.array([boid.position for boid in self.boids])

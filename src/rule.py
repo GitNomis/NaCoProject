@@ -43,7 +43,7 @@ class Alignment(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
-    @profile
+    
     def apply(self, swarm: Swarm,positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
@@ -68,14 +68,14 @@ class Cohesion(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
-    @profile
+    
     def apply(self, swarm: Swarm,positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
             if n_idx.size > 0:
                 force_vector[i] = np.mean(positions[n_idx,:],axis=0) - swarm.boids[i].position
         norm=np.linalg.norm(force_vector,axis=1)[:,np.newaxis]
-        force_vector=np.divide(force_vector,norm,where=norm>0)
+        force_vector=np.divide(force_vector,norm,where=norm>0,out=force_vector)
         return force_vector
 
     @staticmethod
@@ -93,14 +93,14 @@ class Separation(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
-    @profile
+    
     def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
             if n_idx.size > 0:
                 force_vector[i] = swarm.boids[i].position - swarm.boids[n_idx[0]].position 
         norm=np.linalg.norm(force_vector,axis=1)[:,np.newaxis]
-        force_vector=np.divide(force_vector,norm,where=norm>0) 
+        force_vector=np.divide(force_vector,norm,where=norm>0,out=force_vector) 
 
         return force_vector
 
@@ -119,11 +119,11 @@ class GoToWater(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
-    @profile
+    
     def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float], neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)    
-        no_water_idx = np.nonzero([not b.carrying_water for b in swarm.boids])
-        if no_water_idx[0].size == 0: 
+        no_water_idx = np.nonzero([not b.carrying_water for b in swarm.boids])[0]
+        if no_water_idx.size == 0: 
             return force_vector 
         water_within_vision_idx, _ = swarm.env.water_tree.query_radius(positions[no_water_idx], r=swarm.vision_range, sort_results=True, return_distance=True)
 
@@ -132,7 +132,7 @@ class GoToWater(Rule):
                 force_vector[i]=swarm.env.water_tree.data[closest_waters[0]]-positions[i]
        
         norm=np.linalg.norm(force_vector,axis=1)[:,np.newaxis]
-        force_vector=np.divide(force_vector,norm,where=norm>0)
+        force_vector=np.divide(force_vector,norm,where=norm>0,out=force_vector)
         return force_vector
 
     @staticmethod
@@ -149,11 +149,11 @@ class GoToFire(Rule):
 
     def __init__(self, **params):
         super().__init__(**params)
-    @profile
+    
     def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float], neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)        
-        water_idx = np.nonzero([b.carrying_water for b in swarm.boids])
-        if swarm.env.n_fires == 0 or water_idx[0].size == 0: 
+        water_idx = np.nonzero([b.carrying_water for b in swarm.boids])[0]
+        if swarm.env.n_fires == 0 or water_idx.size == 0: 
             return force_vector  
         fire_within_vision_idx, _ = swarm.env.fire_tree.query_radius(positions[water_idx], r=swarm.vision_range, sort_results=True, return_distance=True)
 
@@ -162,7 +162,7 @@ class GoToFire(Rule):
                 force_vector[i]=swarm.env.fire_tree.data[closest_fires[0]]-positions[i]
                
         norm=np.linalg.norm(force_vector,axis=1)[:,np.newaxis]
-        force_vector=np.divide(force_vector,norm,where=norm>0)
+        force_vector=np.divide(force_vector,norm,where=norm>0,out=force_vector)
         return force_vector
 
     @staticmethod
