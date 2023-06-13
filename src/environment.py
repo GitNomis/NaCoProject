@@ -50,8 +50,7 @@ class Environment:
                     grid[i,j]=cell
                     if cell == State.FIRE.value:
                         n_fires+=1
-            return Environment(nrows*ncols,n_fires,grid)            
-
+            return Environment(nrows*ncols,n_fires,grid)    
 
 
     @staticmethod
@@ -85,6 +84,20 @@ class Environment:
             grid[tuple(c)] = State.FIRE.value
 
         return grid   
+    
+    def to_file(self, file_path: str) -> None:
+        """Write the grid to a file.
+
+        Arguments:
+            file_path -- The path to the file.
+        """        
+        with open(file_path,'w') as file:
+            res = f"{self.grid.shape[0]} {self.grid.shape[1]}\n"
+            for i in range(self.grid.shape[0]):
+                for j in range(self.grid.shape[1]):
+                    res += self.grid[i, j]
+                res += '\n'
+            file.write(res)    
 
     def update(self) -> None:
         """Update the environment.
