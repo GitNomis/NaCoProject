@@ -1,6 +1,6 @@
 import numpy as np
 from src import *
-@profile
+
 def main():
     show_display=True
     steps=500
