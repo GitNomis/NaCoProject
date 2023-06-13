@@ -15,7 +15,7 @@ from .state import State
 
 class Display:
 
-    def __init__(self, swarm:Swarm, steps:int, infinite:bool) -> None:
+    def __init__(self, swarm:Swarm, steps:int, infinite:bool,savefile:str=None) -> None:
         """Display class with different ways of displaying an environment.
 
         Args:
@@ -26,6 +26,7 @@ class Display:
         self.swarm = swarm
         self.steps = steps
         self.infinite = infinite
+        self.savefile = savefile
 
         self.cmap = colors.ListedColormap(['peru','firebrick','dodgerblue','forestgreen'])
         bounds=[-0.5, 0.5, 1.5, 2.5, 3.5]
@@ -45,13 +46,20 @@ class Display:
         self.scatter = plt.scatter(x, y, marker=self.boid_marker, color=self.boid_color[0])
 
         self.ax.invert_yaxis()
+        if self.savefile:
+            self.ax.axis('off')
+            self.ax.get_xaxis().set_visible(False)
+            self.ax.get_yaxis().set_visible(False)
         plt.tight_layout()
         
         if not self.infinite:
             # Animation
             animator = animation.FuncAnimation(fig, self.animate, interval=self.interval, frames=self.steps, repeat=False, cache_frame_data=False)
-            plt.show(block=False)
-            plt.pause(self.steps * self.interval * 0.001) # pause (s) = frames * interval (ms) * 0.001
+            if self.savefile:
+                animator.save(f'{self.savefile}.gif',fps=60,dpi=300)
+            else:
+                plt.show(block=False)
+                plt.pause(self.steps * self.interval * 0.001) # pause (s) = frames * interval (ms) * 0.001    
             plt.close(fig)
         else:
             # Animation
