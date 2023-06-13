@@ -37,6 +37,8 @@ class Rule:
             force = closest_fire - boid.position
         else:
             force = np.zeros(2)   
+        closest_fire = tree.data[tree.query([boid.position], k=1,return_distance=False)[0,0]]
+        force = closest_fire - boid.position
         return force    
 
     @staticmethod
@@ -61,8 +63,10 @@ class Alignment(Rule):
     def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
-            if n_idx.size > 0:
-                force_vector[i] = np.mean([b.velocity for b in swarm.boids[n_idx]])
+            n_idx = n_idx[n_idx!=i]
+            if n_idx.size == 0:
+                continue
+            force_vector[i] = np.mean([b.velocity for b in swarm.boids[n_idx]])
         return force_vector
 
     @staticmethod
@@ -89,8 +93,10 @@ class Cohesion(Rule):
     def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
-            if n_idx.size > 0:
-                force_vector[i] = np.mean([b.position for b in swarm.boids[n_idx]]) - swarm.boids[i].position
+            n_idx = n_idx[n_idx!=i]
+            if n_idx.size == 0:
+                continue
+            force_vector[i] = np.mean([b.position for b in swarm.boids[n_idx]]) - swarm.boids[i].position
         force_vector = normalize(force_vector, axis=1) * self.strength
         return force_vector
 
@@ -120,8 +126,10 @@ class Separation(Rule):
     def apply(self, swarm: Swarm, velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
-            if n_idx.size > 0:
-                force_vector[i] = swarm.boids[i].position - swarm.boids[n_idx[0]].position 
+            n_idx = n_idx[n_idx!=i]
+            if n_idx.size == 0:
+                continue
+            force_vector[i] = swarm.boids[i].position - swarm.boids[n_idx[0]].position
         force_vector = normalize(force_vector, axis=1) * self.strength
         return force_vector
 
@@ -155,6 +163,8 @@ class GoToWater(Rule):
         for i, boid in enumerate(swarm.boids):
             if not boid.carrying_water:
                 force_vector[i] = self.to_closest_tile(swarm.vision_range, swarm.env.water_tree, boid)
+            else: 
+                force_vector[i] = np.zeros(2)    
             force_vector = normalize(force_vector, axis=1) * self.strength
         return force_vector
 
@@ -190,13 +200,15 @@ class GoToFire(Rule):
         for i in range(swarm.env.grid.shape[0]):
             for j in range(swarm.env.grid.shape[1]):
                 if swarm.env.grid[i, j] == State.FIRE.value:
-                    fire_coordinates.append([i+0.5, j+0.5])
+                    fire_coordinates.append([i, j])
 
                     
         fire_tree=KDTree(fire_coordinates)
         for i, boid in enumerate(swarm.boids):
             if boid.carrying_water:
                 force_vector[i] = self.to_closest_tile(swarm.vision_range, fire_tree, boid)
+            else: 
+                force_vector[i] = np.zeros(2)    
             force_vector = normalize(force_vector, axis=1) * self.strength
         return force_vector
 
