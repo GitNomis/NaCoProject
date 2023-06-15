@@ -103,7 +103,7 @@ class Environment:
         """Update the environment.
         """        
         fires=np.where(self.grid==State.FIRE.value,1,0)
-        kernel= np.array([[1,4,1],[4,0,4],[1,4,1]])*0.001
+        kernel= np.array([[1,4,1],[4,0,4],[1,4,1]])*0.002
         p=np.where(self.grid==State.TREE.value,convolve2d(fires,kernel,mode='same'),0)
         mask=p>np.random.random(p.shape)
         self.n_fires+=mask.sum()

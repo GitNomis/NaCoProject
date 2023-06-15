@@ -19,11 +19,11 @@ class Evolution:
         self.mutate_rate = mutate_rate
         self.population = []
         for _ in range(population_size):
-            rules = [rule.Alignment(weight=np.random.uniform(-1,3)), 
-                     rule.Cohesion(weight=np.random.uniform(-1,3)), 
-                     rule.Separation(weight=np.random.uniform(-1,3)), 
-                     rule.GoToWater(weight=np.random.uniform(-1,3)), 
-                     rule.GoToFire(weight=np.random.uniform(-1,3))]
+            rules = [rule.Alignment(weight=np.random.uniform(-1,1)), 
+                     rule.Cohesion(weight=np.random.uniform(-1,1)), 
+                     rule.Separation(weight=np.random.uniform(-1,1)), 
+                     rule.GoToWater(weight=np.random.uniform(-1,1)), 
+                     rule.GoToFire(weight=np.random.uniform(-1,1))]
             self.population.append(Swarm(environment.copy(),4,4,20,rules))
         self.environment = environment
         self.generation = 0

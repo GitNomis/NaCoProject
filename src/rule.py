@@ -18,11 +18,9 @@ class Rule:
 
     """
     weight: float
-    std: float
 
-    def __init__(self, weight: float = 1.0, std: float = 0.2):
+    def __init__(self, weight: float = 1.0):
         self.weight = weight
-        self.std = std
 
     def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
         pass
@@ -33,7 +31,7 @@ class Rule:
         return Rule(weight=weight)
 
     def mutate(self) -> None:
-        self.weight = np.random.normal(self.weight, self.std)
+        self.weight = np.random.uniform(-1,1)
 
     def __str__(self):
         return f"weight = {self.weight:.4}"    
