@@ -67,7 +67,7 @@ class Environment:
         Returns:
             np.ndarray: A representation of the cellular automaton. 
         """        
-        grid = np.zeros(shape=size, dtype=np.int8)
+        grid = np.ones(shape=size, dtype=np.int8) * 3  # forest tiles
 
         coordinates = np.array([[x, y] for x in range(size[0]) for y in range(size[1])])
         n_burning_tiles = int(np.floor(n_tiles * fire_size)) if fire_size < 1 else fire_size
@@ -95,7 +95,7 @@ class Environment:
             res = f"{self.grid.shape[0]} {self.grid.shape[1]}\n"
             for i in range(self.grid.shape[0]):
                 for j in range(self.grid.shape[1]):
-                    res += self.grid[i, j]
+                    res += str(self.grid[i, j])
                 res += '\n'
             file.write(res)    
 
