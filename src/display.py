@@ -36,6 +36,8 @@ class Display:
         self.boid_color = ["darkgray","deepskyblue"]
 
     def display(self)-> None:
+        """Show and animate the display
+        """        
         fig, self.ax = plt.subplots(1, 1, figsize=(5, 5))
         # Forest fire
         plt.imshow(np.flip(self.swarm.env.grid.T, 0), cmap=self.cmap, norm=self.norm, origin="lower", extent=(0, self.swarm.env.grid.shape[0], self.swarm.env.grid.shape[1], 0))
@@ -67,6 +69,11 @@ class Display:
             plt.show()
         
     def animate(self, i:int)-> None:
+        """Animate the display
+
+        Args:
+            i: not accessed.
+        """        
         # Update the boids
         self.swarm.update()
         
@@ -102,19 +109,3 @@ class Display:
         self.scatter.set_offsets(offsets)
         paths = [m.get_path().transformed(m.get_transform()) for m in markers]
         self.scatter.set_paths(paths)
-
-    def display_grid(self, env:Environment)-> None:
-        shape=env.grid.shape
-        res = ""
-        for y in range(shape[0]):
-            for x in range(shape[1]):
-                if env.grid[y,x]==State.BARREN:
-                    res+= '🏜'
-                elif env.grid[y,x]==State.FIRE:
-                    res+= '🔥'
-                elif env.grid[y,x]==State.TREE:
-                    res+= '🌲'
-                elif env.grid[y,x]==State.WATER:
-                    res+= '🌊'
-            res+='\n'
-        return res    

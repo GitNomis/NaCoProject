@@ -38,13 +38,23 @@ class Swarm:
         self.kdtree = self.construct_KDTree()
         self.env = env
 
-    def reset(self,env:Environment):
+    def reset(self,env:Environment) -> None:
+        """Reset the swarm and set a new environment. 
+        Arguments:
+            env (Environment): An environment.
+
+        """   
         self.boids = np.array([Boid(np.random.uniform(0, env.grid.shape[0]-1.01, 2), np.random.uniform(-1, 1, 2)*self.max_speed, env, 1) for _ in self.boids])
         self.kdtree = self.construct_KDTree()
         self.env=env
 
 
     def construct_KDTree(self) -> KDTree:
+        """Construct a KDTree for the boid positions.
+
+        Returns:
+            KDTree: a KDTree for the boid positions.  
+        """   
         return KDTree([boid.position for boid in self.boids])
     
     def simulate(self, n_iters: int) -> int:
@@ -55,6 +65,8 @@ class Swarm:
         return self.env.calculate_fitness()
     
     def update(self) -> None:
+        """Update the boids in the swarm. 
+        """   
         velocities = np.array([boid.velocity for boid in self.boids])
         positions = np.array([boid.position for boid in self.boids])
         force_vector = np.zeros(velocities.shape)

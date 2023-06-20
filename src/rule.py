@@ -43,6 +43,17 @@ class Alignment(Rule):
         super().__init__(**params)
     
     def apply(self, swarm: Swarm,positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+        """Apply the rule to the swarm.
+
+        Arguments:
+            swarm (Swarm): The swarm.
+            velocities (np.ndarray[float]): The velocity vectors of the boids in the swarm. 
+            positions: np.ndarray[float]: Not used. 
+            neighbours_idx (np.ndarray[np.ndarray]): The list of neighbour indices per boid. 
+
+        Returns:
+            np.ndarray[np.ndarray]: The force vector that results from the appliation of the rule. 
+        """     
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
             if n_idx.size > 0:
@@ -51,6 +62,15 @@ class Alignment(Rule):
 
     @staticmethod
     def crossover(rule: Alignment, other: Alignment) -> Alignment:
+        """Apply crossover between two rules.
+
+        Arguments:
+            rule (Rule): Rule 1.
+            other (Rule): Rule 2.
+
+        Returns:
+            Rule: the newly created rule. 
+        """   
         new_rule = super().crossover(rule, other)
         new_rule.__class__ = Alignment
     
@@ -67,7 +87,18 @@ class Cohesion(Rule):
     def __init__(self, **params):
         super().__init__(**params)
     
-    def apply(self, swarm: Swarm,positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+    def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+        """Apply the rule to the swarm.
+
+        Arguments:
+            swarm (Swarm): The swarm.
+            velocities (np.ndarray[float]): The velocity vectors of the boids in the swarm. 
+            positions: np.ndarray[float]: The positions of the boids.
+            neighbours_idx (np.ndarray[np.ndarray]): The list of neighbour indices per boid. 
+
+        Returns:
+            np.ndarray[np.ndarray]: The force vector that results from the appliation of the rule. 
+        """     
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
             if n_idx.size > 0:
@@ -78,6 +109,15 @@ class Cohesion(Rule):
 
     @staticmethod
     def crossover(rule: Cohesion, other: Cohesion) -> Cohesion:
+        """Apply crossover between two rules.
+
+        Arguments:
+            rule (Rule): Rule 1.
+            other (Rule): Rule 2.
+
+        Returns:
+            Rule: the newly created rule. 
+        """   
         new_rule = super().crossover(rule,other)
         new_rule.__class__ = Cohesion
 
@@ -92,7 +132,18 @@ class Separation(Rule):
     def __init__(self, **params):
         super().__init__(**params)
     
-    def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float],neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+    def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float], neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[np.ndarray]:
+        """Apply the rule to the swarm.
+
+        Arguments:
+            swarm (Swarm): The swarm.
+            velocities (np.ndarray[float]): The velocity vectors of the boids in the swarm. 
+            positions: np.ndarray[float]: Not used. 
+            neighbours_idx (np.ndarray[np.ndarray]): The list of neighbour indices per boid. 
+
+        Returns:
+            np.ndarray[np.ndarray]: The force vector that results from the appliation of the rule. 
+        """     
         force_vector = np.zeros(velocities.shape)
         for i, n_idx in enumerate(neighbours_idx):
             if n_idx.size > 0:
@@ -104,6 +155,15 @@ class Separation(Rule):
 
     @staticmethod
     def crossover(rule: Separation, other: Separation) -> Separation:
+        """Apply crossover between two rules.
+
+        Arguments:
+            rule (Rule): Rule 1.
+            other (Rule): Rule 2.
+
+        Returns:
+            Rule: the newly created rule. 
+        """   
         new_rule = super().crossover(rule,other)
         new_rule.__class__ = Separation
 
@@ -119,6 +179,17 @@ class GoToWater(Rule):
         super().__init__(**params)
     
     def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float], neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+        """Apply the rule to the swarm.
+
+        Arguments:
+            swarm (Swarm): The swarm.
+            velocities (np.ndarray[float]): The velocity vectors of the boids in the swarm. 
+            positions: np.ndarray[float]: The positions of the boids. 
+            neighbours_idx (np.ndarray[np.ndarray]): Not used. 
+
+        Returns:
+            np.ndarray[np.ndarray]: The force vector that results from the appliation of the rule. 
+        """     
         force_vector = np.zeros(velocities.shape)    
         no_water_idx = np.nonzero([not b.carrying_water for b in swarm.boids])[0]
         if no_water_idx.size == 0: 
@@ -135,6 +206,15 @@ class GoToWater(Rule):
 
     @staticmethod
     def crossover(rule: GoToWater, other: GoToWater) -> GoToWater:
+        """Apply crossover between two rules.
+
+        Arguments:
+            rule (Rule): Rule 1.
+            other (Rule): Rule 2.
+
+        Returns:
+            Rule: the newly created rule. 
+        """   
         new_rule = super().crossover(rule,other)
         new_rule.__class__ = GoToWater
 
@@ -149,6 +229,17 @@ class GoToFire(Rule):
         super().__init__(**params)
     
     def apply(self, swarm: Swarm, positions: np.ndarray[float], velocities: np.ndarray[float], neighbours_idx:np.ndarray[np.ndarray]) -> np.ndarray[float]:
+        """Apply the rule to the swarm.
+
+        Arguments:
+            swarm (Swarm): The swarm.
+            velocities (np.ndarray[float]): The velocity vectors of the boids in the swarm. 
+            positions: np.ndarray[float]: The positions of the boids. 
+            neighbours_idx (np.ndarray[np.ndarray]): Not used. 
+
+        Returns:
+            np.ndarray[np.ndarray]: The force vector that results from the appliation of the rule. 
+        """     
         force_vector = np.zeros(velocities.shape)        
         water_idx = np.nonzero([b.carrying_water for b in swarm.boids])[0]
         if swarm.env.n_fires == 0 or water_idx.size == 0: 
@@ -165,6 +256,15 @@ class GoToFire(Rule):
 
     @staticmethod
     def crossover(rule: GoToFire, other: GoToFire) -> GoToFire:
+        """Apply crossover between two rules.
+
+        Arguments:
+            rule (Rule): Rule 1.
+            other (Rule): Rule 2.
+
+        Returns:
+            Rule: the newly created rule. 
+        """   
         new_rule = super().crossover(rule,other)
         new_rule.__class__ = GoToFire
 

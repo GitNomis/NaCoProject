@@ -28,7 +28,18 @@ class Evolution:
         self.environment = environment
         self.generation = 0
 
-    def evolve(self, n_iters,reps=1) -> None:
+    def evolve(self, n_iters: int, reps: int = 1) -> float:
+        """Evolve the population by crossing over the best-performing individuals. Individuals that are selected for crossover 
+        are selected based on a random choice given their fitness level compared to the fitness level of the other individuals.
+
+
+        Arguments:
+            n_iters (int): The number of times a fire-extinguishing simulation should iterate to calculate the fitness.
+            reps (int): The number of times a fire-extinguishing simulation should be repeated to get a more stable estimate of the fitness.
+                        default = 1. 
+        Returns:
+            float: The fitness level of the population.
+        """     
         fitness = self.calculate_fitness(n_iters=n_iters,reps=reps)
         p = (fitness + 1 + abs(fitness.min()))**2
         candidates = np.random.choice(
@@ -44,6 +55,16 @@ class Evolution:
         return fitness
 
     def calculate_fitness(self, n_iters,reps=1) -> np.ndarray[int]:
+        """Calculate the fitness of a population.
+
+
+        Arguments:
+            n_iters (int): The number of times a fire-extinguishing simulation should iterate to calculate the fitness.
+            reps (int): The number of times a fire-extinguishing simulation should be repeated to get a more stable estimate of the fitness.
+                        default = 1. 
+        Returns:
+            float: The fitness level of the population, averaged over the reps.
+        """     
         fitness = np.zeros(self.population_size)    
         for _ in range(reps):
             fitness += np.array([swarm.simulate(n_iters=n_iters) for swarm in self.population])
@@ -52,11 +73,30 @@ class Evolution:
         return  fitness/reps
 
     def crossover(self, parent1: Swarm, parent2: Swarm) -> Swarm:
+        """Perform crossover by combining the rules from two parent individuals. 
+
+
+        Arguments:
+            parent1 (Swarm): The first parent to cross over.
+            parent1 (Swarm): The second parent to cross over.
+
+        Returns:
+            Swarm: The child that results from the crossover. 
+        """     
         rule_types = parent1.rules.keys() | parent2.rules.keys()
         new_rules = [rule.crossover(parent1.rules[rule], parent2.rules[rule]) for rule in rule_types]
         return Swarm(self.environment.copy(), parent1.vision_range, parent2.vision_range, len(self.population), new_rules)
 
     def mutate(self, child: Swarm) -> None:
+        """Mutate the individual by mutating one of its swarming rules.
+
+
+        Arguments:
+            child (Swarm): A swarm. 
+
+        Returns:
+            Swarm: The mutated swarm. 
+        """     
         for rule in child.rules.keys():
             if np.random.random()<=self.mutate_rate: 
                 child.rules[rule].mutate()

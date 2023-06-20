@@ -11,7 +11,6 @@ def main():
     n_iters = 200  # How long the simultations during the evolution should run
     key_order = [rule.Alignment, rule.Cohesion, rule.Separation, rule.GoToFire, rule.GoToWater]
 
-    #env = Environment.example(size=(20, 20), fire_size=10, water_size=2)
     env = Environment.from_file(r'grid_files\presentation.in')
 
     with open(results_file, mode='a') as out:

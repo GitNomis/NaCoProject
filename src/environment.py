@@ -39,6 +39,12 @@ class Environment:
     
     @classmethod
     def from_file(cls, file_path:str):
+        """Create an environment from a file
+
+        Arguments:
+            file_path (str): the path to the .in file. 
+
+        """      
         with open(file_path,'r') as file:
             nrows,ncols=[int(s) for s in file.readline().split()]
             grid=np.empty((nrows,ncols),dtype=np.int8)
@@ -89,7 +95,7 @@ class Environment:
         """Write the grid to a file.
 
         Arguments:
-            file_path -- The path to the file.
+            file_path: The path to the file.
         """        
         with open(file_path,'w') as file:
             res = f"{self.grid.shape[0]} {self.grid.shape[1]}\n"
@@ -121,12 +127,24 @@ class Environment:
         return -self.n_fires
     
     def copy(self):
+        """Create a deep copy of the environment
+        """      
         return Environment(self.n_tiles,self.n_fires,self.grid.copy())
     
     def contains_fire(self) -> bool:
+        """Verifies whether the environment contains fire
+
+        Returns:
+            bool: True if the environment contains fire. 
+        """  
         return self.n_fires>0
     
     def get_tree(self,value:int) -> KDTree:
+        """Get a KDTree from the centres of the coordinates of `value` in the grid.
+
+        Returns:
+            KDTree: a KDTree from the centres of the coordinates of `value` in the grid
+        """  
         coordinates = []
         for i in range(self.grid.shape[0]):
             for j in range(self.grid.shape[1]):
