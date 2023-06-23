@@ -85,7 +85,7 @@ class Evolution:
         """     
         rule_types = parent1.rules.keys() | parent2.rules.keys()
         new_rules = [rule.crossover(parent1.rules[rule], parent2.rules[rule]) for rule in rule_types]
-        return Swarm(self.environment.copy(), parent1.vision_range, parent2.vision_range, len(self.population), new_rules)
+        return Swarm(self.environment.copy(), parent1.vision_range, parent2.vision_range, parent1.boids.size, new_rules)
 
     def mutate(self, child: Swarm) -> None:
         """Mutate the individual by mutating one of its swarming rules.
